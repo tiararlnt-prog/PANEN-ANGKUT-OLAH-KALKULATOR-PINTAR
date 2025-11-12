@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>🌴 PANEN, ANGKUT, OLAH & KALKULATOR PINTAR (Elegan)</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg1:#071014;
+  --bg2:#0b2a18;
+  --leaf1:#0f6b3f;
+  --leaf2:#2aa568;
+  --gold:#d4a25a;
+  --muted:#1f2a24;
+  --card:#0f1912;
+  --glass: rgba(255,255,255,0.03);
+  --text:#e9f3ea;
+  --accent:#2aa568;
+  --maxw:1100px;
+  --radius:14px;
+  --glass-2: rgba(255,255,255,0.02);
+  --shadow: 0 10px 30px rgba(2,8,6,0.6);
+}
+
+/* Reset & base */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: "Poppins", "Fira Code", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(40,90,50,0.08), transparent),
+              linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow:hidden;
+}
+
+/* Decorative leaf motif using SVG background (subtle) */
+.leaf-bg {
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:0.08;
+  background-image: url('data:image/svg+xml;utf8,\
+  <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">\
+    <defs>\
+      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">\
+        <stop offset="0" stop-color="%232aa568" stop-opacity="0.75"/>\
+        <stop offset="1" stop-color="%230f6b3f" stop-opacity="0.75"/>\
+      </linearGradient>\
+    </defs>\
+    <g fill="url(%23g)" transform="rotate(-12 600 400)">\
+      <path d="M100 400 C260 220, 460 220, 620 400 C780 580, 980 580, 1140 400 L1140 800 L100 800 Z" />\
+      <path d="M-50 300 C130 120, 350 120, 520 300 C690 480, 910 480, 1090 300 L1090 800 L-50 800 Z" opacity="0.9"/>\
+    </g>\
+  </svg>');
+  background-repeat:no-repeat;
+  background-position: 90% 10%;
+  background-size: 80%;
+}
+
+/* App container */
+.app {
+  position:relative;
+  width:100%;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1;
+}
+
+/* Center card for fullscreen menu */
+.menu-screen {
+  width:min(1100px, 96%);
+  max-width:var(--maxw);
+  margin:24px;
+  padding:28px;
+  border-radius:20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(6px) saturate(1.05);
+  border: 1px solid rgba(255,255,255,0.04);
+  position:relative;
+  z-index:2;
+}
+
+/* Header area inside menu */
+.menu-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+.brand {
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.logo {
+  width:56px; height:56px; border-radius:12px;
+  background: linear-gradient(135deg,var(--leaf2),var(--leaf1));
+  display:flex; align-items:center; justify-content:center; color:#06220f;
+  font-weight:800; font-family:"Fira Code";
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 -6px 18px rgba(255,255,255,0.06);
+}
+.title {
+  font-size:18px; font-weight:700; letter-spacing:0.4px;
+}
+.subtitle { font-size:13px; color:rgba(233,243,234,0.75); }
+
+/* Grid of menu cards */
+.menu-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  margin-top:6px;
+}
+.menu-card {
+  background: linear-gradient(180deg,var(--glass), var(--glass-2));
+  border-radius:12px;
+  padding:18px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s;
+  border:1px solid rgba(255,255,255,0.03);
+}
+.menu-card:hover { transform: translateY(-6px) scale(1.01); box-shadow: 0 18px 48px rgba(3,10,6,0.6); }
+.menu-card .mc-title { font-weight:700; font-size:15px; }
+.menu-card .mc-desc { font-size:13px; color:rgba(233,243,234,0.78); }
+
+/* Main content (hidden initially) */
+.app-screen {
+  position:fixed;
+  inset:0;
+  z-index:3;
+  display:flex;
+  flex-direction:column;
+  background: linear-gradient(180deg, rgba(5,7,6,0.6), rgba(4,6,5,0.85));
+  padding:20px;
+  overflow:auto;
+  transform: translateY(20px);
+  opacity:0;
+  pointer-events:none;
+  transition: all .36s ease;
+}
+.app-screen.show { transform: translateY(0); opacity:1; pointer-events:auto; }
+
+/* Top bar with back */
+.topbar {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px;
+}
+.btn-back {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.04);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  display:inline-flex;
+  gap:8px;
+  align-items:center;
+  font-weight:600;
+}
+.btn-back:hover { transform:translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.6); }
+
+/* Content canvas */
+.content-body {
+  max-width:var(--maxw);
+  margin:0 auto;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  border-radius:14px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+
+/* Headings & text */
+.h1 { font-size:22px; font-weight:700; margin:0; color:var(--leaf2); }
+.p { color:rgba(233,243,234,0.9); line-height:1.6; }
+.section-img { width:100%; border-radius:10px; margin-top:12px; }
+
+/* Card rows for quick info */
+.row { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+.info-card {
+  flex:1 1 220px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,0,0,0.02));
+  border-radius:12px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,0.02);
+}
+.info-card h3{ margin:0 0 6px 0; font-size:14px; color:var(--gold); }
+.info-card p{ margin:0; font-size:13px; color:rgba(233,243,234,0.82); }
+
+/* Kalkulator style */
+.calc {
+  display:grid;
+  grid-template-columns: 1fr 320px;
+  gap:16px;
+  margin-top:16px;
+}
+.calc-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+  padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.02);
+}
+.form-row { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
+.input {
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.04);
+  background: rgba(0,0,0,0.18);
+  color:var(--text);
+  font-size:14px;
+}
+.input[type="number"]::-webkit-inner-spin-button, .input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.label { font-size:13px; color:rgba(233,243,234,0.85); min-width:150px; }
+
+/* Results box */
+.result {
+  padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(40,80,40,0.12), rgba(10,20,10,0.08));
+  border:1px solid rgba(255,255,255,0.03);
+}
+.result h4 { margin:0 0 6px 0; color:var(--leaf2); }
+.result .val { font-weight:700; font-size:18px; color:var(--gold); }
+
+/* Responsive */
+@media (max-width:920px){
+  .calc { grid-template-columns: 1fr; }
+  .menu-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width:520px){
+  .menu-grid { grid-template-columns: 1fr; }
+  .logo { width:48px;height:48px;font-size:14px }
+}
+</style>
+</head>
+<body>
+
+<div class="leaf-bg" aria-hidden="true"></div>
+
+<div class="app" role="application" aria-label="Aplikasi PAO - Menu">
+  <!-- Fullscreen Menu -->
+  <div class="menu-screen" id="menuScreen" role="dialog" aria-modal="true" aria-label="Menu Utama PAO">
+    <div class="menu-head">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">PAO</div>
+        <div>
+          <div class="title">PANEN • ANGKUT • OLAH • KALKULATOR PINTAR </div>
+          <div class="subtitle">INSTIPER • TEKNIK PERTANIAN</div>
+        </div>
+      </div>
+      <div style="text-align:right; font-size:13px; color:rgba(233,243,234,0.8);">Versi 2025</div>
+    </div>
+
+    <div class="menu-grid" id="menuGrid">
+      <!-- Menu cards (order follows earlier content) -->
+      <div class="menu-card" data-target="pao" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Beranda</div>
+        <div class="mc-desc">Ringkasan PAO & tujuan praktik.</div>
+      </div>
+
+      <div class="menu-card" data-target="kriteria" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Kriteria Panen</div>
+        <div class="mc-desc">Kapan TBS siap panen dan indikatornya.</div>
+      </div>
+
+      <div class="menu-card" data-target="bunga" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Bunga Jantan & Betina</div>
+        <div class="mc-desc">Rasio bunga betina, pengaruh ke produksi.</div>
+      </div>
+
+      <div class="menu-card" data-target="eladobius" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Eladobius C</div>
+        <div class="mc-desc">Kumbang penyerbuk & indeks penyerbukan.</div>
+      </div>
+
+      <div class="menu-card" data-target="kaveld" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Kaveld</div>
+        <div class="mc-desc">Pembagian blok kebun & rotasi panen.</div>
+      </div>
+
+      <div class="menu-card" data-target="panen" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Panen</div>
+        <div class="mc-desc">Proses panen dan praktik pengambilan TBS.</div>
+      </div>
+
+      <div class="menu-card" data-target="angkut" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Angkut</div>
+        <div class="mc-desc">Transport & waktu ideal ke PKS.</div>
+      </div>
+
+      <div class="menu-card" data-target="olah" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Olah di PKS</div>
+        <div class="mc-desc">Proses menjadi CPO & rendemen.</div>
+      </div>
+
+      <div class="menu-card" data-target="kalkulator" tabindex="0" role="button" aria-pressed="false">
+        <div class="mc-title">Kalkulator Sawit</div>
+        <div class="mc-desc">Hitung rendemen, rasio bunga, dan tonase total.</div>
+      </div>
+
+      <div class="menu-card" data-target="karya" tabindex="0" role="button" aria-pressed="false">
+  <div class="mc-title">Karya</div>
+  <div class="mc-desc">Karya & Tim Pengembang Aplikasi.</div>
+</div>
+    </div>
+  </div>
+
+  <!-- App Screen - Hidden until menu clicked -->
+  <div class="app-screen" id="appScreen" role="region" aria-hidden="true" aria-label="Konten PAO">
+    <div style="max-width:var(--maxw);margin:0 auto;width:96%;">
+      <div class="topbar">
+        <button class="btn-back" id="btnBack" aria-label="Kembali ke menu utama">&larr; Kembali</button>
+        <div style="flex:1">
+          <div id="screenTitle" class="h1" aria-live="polite">Beranda</div>
+          <div style="color:rgba(233,243,234,0.78);font-size:13px;margin-top:4px" id="screenSubtitle">Ringkasan PAO</div>
+        </div>
+      </div>
+
+      <div class="content-body" id="contentBody">
+        <!-- Content will be injected here based on menu -->
+        <!-- Starting content (Beranda) -->
+        <div id="content-pao" class="content-block">
+          <h3 class="h1">PAO — Panen • Angkut • Olah</h3>
+          <p class="p">PAO merupakan rangkaian kegiatan perkebunan kelapa sawit yang meliputi proses panen, pengangkutan, dan pengolahan hasil panen menjadi minyak sawit mentah (CPO). Setiap tahap memiliki peran penting untuk menjaga kualitas dan kuantitas produksi minyak sawit.</p>
+          <img class="section-img" src="https://www.musimmas.com/wp-content/uploads/2022/05/FFB.jpg" alt="Tandan Buah Segar (FFB) di kebun sawit" loading="lazy">
+          <div class="row">
+            <div class="info-card">
+              <h3>Fokus</h3>
+              <p>Menjaga kualitas TBS, optimasi angkut, dan efisiensi proses di PKS.</p>
+            </div>
+            <div class="info-card">
+              <h3>Manfaat</h3>
+              <p>Meningkatkan rendemen, mengurangi kehilangan di lapangan, dan menjaga mutu CPO.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="content-kriteria" class="content-block" style="display:none">
+          <h3 class="h1">Kriteria Panen</h3>
+          <p class="p">TBS dianggap matang dan siap panen jika terdapat 10–15 brondolan jatuh alami per tandan. Panen terlalu dini atau terlambat akan menurunkan rendemen minyak.</p>
+          <table style="width:100%;border-collapse:collapse;margin-top:12px;color:var(--text)">
+            <tr><th style="text-align:left;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)">Kriteria</th><th style="text-align:left;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)">Ciri</th></tr>
+            <tr><td style="padding:8px;">Matang</td><td style="padding:8px;">10–15 brondolan jatuh</td></tr>
+            <tr><td style="padding:8px;">Mentah</td><td style="padding:8px;">&lt; 10 brondolan</td></tr>
+            <tr><td style="padding:8px;">Terlalu matang</td><td style="padding:8px;">Brondolan hampir habis</td></tr>
+          </table>
+          <img class="section-img" src="https://plantationmagazine.com/wp-content/uploads/2021/03/panen-sawit.jpg" alt="Panen sawit di lapangan" loading="lazy">
+        </div>
+
+        <div id="content-bunga" class="content-block" style="display:none">
+          <h3 class="h1">Bunga Jantan & Betina</h3>
+          <p class="p">Rasio bunga betina dihitung dengan rumus: <code>(Jumlah bunga betina / Total bunga) × 100%</code>. Semakin tinggi rasio betina, semakin besar potensi produksi tandan buah segar.</p>
+        </div>
+
+        <div id="content-eladobius" class="content-block" style="display:none">
+          <h3 class="h1">Eladobius C</h3>
+          <p class="p">Eladobius sp adalah kumbang penyerbuk alami kelapa sawit. Pengamatan dilakukan untuk menghitung populasi serangga per 100 spikelet bunga. Nilai indeks C menunjukkan efektivitas penyerbukan.</p>
+          <img class="section-img" src="https://www.goldenagri.com.sg/wp-content/uploads/2021/05/FFB-collectors-using-metal-poles-to-load-FFBs-into-the-barge_SML-683x1024.jpg" alt="Pekerja mengumpulkan FFB" loading="lazy">
+        </div>
+
+        <div id="content-kaveld" class="content-block" style="display:none">
+          <h3 class="h1">Kaveld</h3>
+          <p class="p">Kaveld adalah satuan blok atau petak kebun yang digunakan untuk pembagian area panen. Masing-masing kaveld memiliki batas jelas agar rotasi panen teratur.</p>
+        </div>
+
+        <div id="content-panen" class="content-block" style="display:none">
+          <h3 class="h1">Panen</h3>
+          <p class="p">Panen adalah kegiatan memetik tandan buah segar (TBS) yang matang. Ciri buah siap panen yaitu 10–15 brondolan jatuh alami per tandan.</p>
+          <img class="section-img" src="https://akvopedia.org/s_wiki/images/d/d0/Oil-palm-2.5-figure10.png" alt="Panen sawit" loading="lazy">
+        </div>
+
+        <div id="content-angkut" class="content-block" style="display:none">
+          <h3 class="h1">Angkut</h3>
+          <p class="p">Angkut adalah proses membawa TBS ke pabrik (PKS). Waktu maksimal idealnya tidak lebih dari 8 jam setelah panen untuk menjaga kualitas minyak.</p>
+          <img class="section-img" src="https://livelihoods.eu/wp-content/uploads/2021/05/Fresh-fruit-bunches-truck.jpg" alt="Truk angkut TBS" loading="lazy">
+        </div>
+
+        <div id="content-olah" class="content-block" style="display:none">
+          <h3 class="h1">Olah di PKS</h3>
+          <p class="p">Olah adalah tahap pengolahan TBS menjadi CPO melalui perebusan, perontokan, pengepresan, dan klarifikasi. Data uji menunjukkan rendemen minyak bervariasi tergantung varietas buah.</p>
+          <table style="width:100%;border-collapse:collapse;margin-top:12px;color:var(--text)">
+            <tr><th style="text-align:left;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)">Sumber</th><th style="text-align:left;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)">Parameter</th><th style="text-align:left;padding:8px;border-bottom:1px solid rgba(255,255,255,0.04)">Nilai / Catatan</th></tr>
+            <tr><td style="padding:8px;">Agritek Vol 3 No 2</td><td style="padding:8px;">Rendemen perebusan 2 jam</td><td style="padding:8px;">71.83%</td></tr>
+            <tr><td style="padding:8px;">Jagur Vol 5 No 1</td><td style="padding:8px;">Tenera vs Dura</td><td style="padding:8px;">20.2% vs 14.4%</td></tr>
+            <tr><td style="padding:8px;">JLSo Vol 2 No 1</td><td style="padding:8px;">Musim kering vs basah</td><td style="padding:8px;">Lahan kering lebih tinggi</td></tr>
+          </table>
+        </div>
+
+        <div id="content-kalkulator" class="content-block" style="display:none">
+          <h3 class="h1">Kalkulator Sawit</h3>
+          <p class="p">Gunakan kalkulator ini untuk menghitung: <strong>Rendemen minyak (%)</strong>, <strong>Rasio bunga betina (%)</strong>, dan <strong>Tonase total (ton)</strong>.</p>
+
+          <div class="calc">
+            <!-- Inputs -->
+            <div class="calc-panel" aria-label="Input Kalkulator">
+              <div style="font-weight:700;margin-bottom:8px;color:var(--leaf2)">Input Data</div>
+
+              <div class="form-row">
+                <label class="label" for="input-tbs">Berat TBS (kg)</label>
+                <input id="input-tbs" class="input" type="number" min="0" step="0.01" placeholder="Contoh: 1000">
+              </div>
+
+              <div class="form-row">
+                <label class="label" for="input-berat-minyak">Berat minyak (kg)</label>
+                <input id="input-berat-minyak" class="input" type="number" min="0" step="0.01" placeholder="Contoh: 180">
+              </div>
+
+              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0;">
+
+              <div style="font-weight:700;margin-bottom:8px;color:var(--leaf2)">Rasio Bunga</div>
+              <div class="form-row">
+                <label class="label" for="input-betina">Jumlah bunga betina</label>
+                <input id="input-betina" class="input" type="number" min="0" step="1" placeholder="Contoh: 120">
+              </div>
+              <div class="form-row">
+                <label class="label" for="input-total-bunga">Jumlah total bunga</label>
+                <input id="input-total-bunga" class="input" type="number" min="1" step="1" placeholder="Contoh: 200">
+              </div>
+
+              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0;">
+
+              <div style="font-weight:700;margin-bottom:8px;color:var(--leaf2)">Tonase</div>
+              <div class="form-row">
+                <label class="label" for="input-jumlah-tandan">Jumlah tandan (buah)</label>
+                <input id="input-jumlah-tandan" class="input" type="number" min="0" step="1" placeholder="Contoh: 3500">
+              </div>
+              <div class="form-row">
+                <label class="label" for="input-berat-per-tandan">Berat rata-rata per tandan (kg)</label>
+                <input id="input-berat-per-tandan" class="input" type="number" min="0" step="0.01" placeholder="Contoh: 1.8">
+              </div>
+
+              <div style="display:flex;gap:10px;margin-top:12px;">
+                <button id="btn-calc" class="btn-back" style="background:linear-gradient(90deg,var(--leaf2),var(--leaf1));border:none;">Hitung</button>
+                <button id="btn-reset" class="btn-back" style="background:rgba(255,255,255,0.03);">Reset</button>
+              </div>
+            </div>
+
+            <!-- Results -->
+            <div class="calc-panel" aria-live="polite">
+              <div style="font-weight:700;margin-bottom:8px;color:var(--leaf2)">Hasil</div>
+
+              <div class="result" style="margin-bottom:10px;">
+                <h4>Rendemen Minyak (%)</h4>
+                <div id="out-rendemen" class="val">—</div>
+                <div style="font-size:12px;color:rgba(233,243,234,0.75);margin-top:6px;">Rumus: (Berat minyak / Berat TBS) × 100</div>
+              </div>
+
+              <div class="result" style="margin-bottom:10px;">
+                <h4>Rasio Bunga Betina (%)</h4>
+                <div id="out-rasio-bunga" class="val">—</div>
+                <div style="font-size:12px;color:rgba(233,243,234,0.75);margin-top:6px;">Rumus: (Jumlah bunga betina / Total bunga) × 100</div>
+              </div>
+
+              <div class="result">
+                <h4>Tonase Total (ton)</h4>
+                <div id="out-tonase" class="val">—</div>
+                <div style="font-size:12px;color:rgba(233,243,234,0.75);margin-top:6px;">Rumus: (Jumlah tandan × Berat per tandan) / 1000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+<div id="content-karya" class="content-block" style="display:none">
+  <h3 class="h1">Karya & Tim Pengembang Aplikasi</h3>
+  <p class="p">Berikut daftar anggota tim yang berperan dalam pembuatan aplikasi interaktif <strong>“PANEN, ANGKUT, OLAH & KALKULATOR PINTAR”</strong>:</p>
+
+  <div class="row" style="margin-top:16px">
+    <div class="info-card">
+      <h3>1. Rahmat Pancadinata/23242015 </h3>
+      <p>Konseptor & Desainer Antarmuka</p>
+    </div>
+    <div class="info-card">
+      <h3>2. Tiara Nisa Arlanti/23241013 </h3>
+      <p>Pengembang & Penulis Konten</p>
+    </div>
+    <div class="info-card">
+      <h3>3. Iqbal Maulana Ardiansah/23241014 </h3>
+      <p>Data & Visualisasi Panen</p>
+    </div>
+    <div class="info-card">
+      <h3>4. Bayu Antariksa/23241012 </h3>
+      <p>Uji Validasi & Finishing </p>
+    </div>
+  </div>
+
+  <p class="p" style="margin-top:18px">Terima kasih kepada semua pihak yang telah berkontribusi dalam pembuatan website ini — semoga bermanfaat bagi kegiatan pembelajaran di bidang teknik pertanian dan perkebunan kelapa sawit.</p>
+</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer small, not intrusive -->
+<div style="position:fixed;right:18px;bottom:18px;color:rgba(233,243,234,0.6);font-size:13px;z-index:5">
+  © 2025 Praktikum Kelapa Sawit
+</div>
+
+<!-- Scripts -->
+<script>
+(function(){
+  // Helper to show app screen and load content block
+  const menuCards = document.querySelectorAll('.menu-card');
+  const appScreen = document.getElementById('appScreen');
+  const menuScreen = document.getElementById('menuScreen');
+  const btnBack = document.getElementById('btnBack');
+  const screenTitle = document.getElementById('screenTitle');
+  const screenSubtitle = document.getElementById('screenSubtitle');
+
+  function openScreen(target){
+    // Hide menu and show app screen
+    menuScreen.style.display = 'none';
+    appScreen.classList.add('show');
+    appScreen.setAttribute('aria-hidden','false');
+    // update title/subtitle
+    const titles = {
+      pao: ['Beranda','Ringkasan PAO'],
+      kriteria: ['Kriteria Panen','Indikator & tabel'],
+      bunga: ['Bunga Jantan & Betina','Rasio bunga dan produksi'],
+      eladobius: ['Eladobius C','Penyerbukan alami'],
+      kaveld: ['Kaveld','Pembagian blok kebun'],
+      panen: ['Panen','Proses panen TBS'],
+      angkut: ['Angkut','Transport ke PKS'],
+      olah: ['Olah di PKS','Proses menjadi CPO'],
+      kalkulator: ['Kalkulator Sawit','Hitung rendemen, rasio bunga, tonase']
+      ,
+        karya: ['Karya & Tim Pengembang','Daftar anggota tim']
+    };
+    const t = titles[target] || ['Konten',''];
+    screenTitle.textContent = t[0];
+    screenSubtitle.textContent = t[1];
+
+    // Hide all content blocks, show target
+    document.querySelectorAll('.content-block').forEach(cb=>{
+      cb.style.display = 'none';
+    });
+    const id = 'content-' + target;
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'block';
+      // scroll to top of app screen
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    // focus heading for accessibility
+    setTimeout(()=> {
+      const focusable = document.querySelector('#contentBody h3') || document.querySelector('#contentBody .h1');
+      if (focusable) focusable.focus?.();
+    }, 220);
+  }
+
+  function closeScreen(){
+    // show menu again
+    appScreen.classList.remove('show');
+    appScreen.setAttribute('aria-hidden','true');
+    menuScreen.style.display = 'block';
+    // scroll to menu top
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  menuCards.forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const target = card.getAttribute('data-target');
+      openScreen(target);
+    });
+    card.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        card.click();
+      }
+    });
+  });
+
+  btnBack.addEventListener('click', closeScreen);
+
+  // Keyboard ESC closes screen
+  document.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') {
+      // if appScreen visible, go back
+      if (appScreen.classList.contains('show')) closeScreen();
+    }
+  });
+
+  // --- Kalkulator logic ---
+  const elTbs = document.getElementById('input-tbs');
+  const elBeratMinyak = document.getElementById('input-berat-minyak');
+  const elBetina = document.getElementById('input-betina');
+  const elTotalBunga = document.getElementById('input-total-bunga');
+  const elJumlahTandan = document.getElementById('input-jumlah-tandan');
+  const elBeratPerTandan = document.getElementById('input-berat-per-tandan');
+
+  const outRendemen = document.getElementById('out-rendemen');
+  const outRasio = document.getElementById('out-rasio-bunga');
+  const outTonase = document.getElementById('out-tonase');
+
+  const btnCalc = document.getElementById('btn-calc');
+  const btnReset = document.getElementById('btn-reset');
+
+  function fmtNum(v, decimals=2){
+    if (isNaN(v) || !isFinite(v)) return '—';
+    return Number(v).toLocaleString('id-ID', {minimumFractionDigits: Math.max(0,decimals), maximumFractionDigits: decimals});
+  }
+
+  function computeAll(){
+    // Rendemen = (Berat minyak / Berat TBS) * 100
+    const tbs = parseFloat(elTbs.value);
+    const oil = parseFloat(elBeratMinyak.value);
+    let rendemen = null;
+    if (!isNaN(tbs) && tbs > 0 && !isNaN(oil)) {
+      rendemen = (oil / tbs) * 100;
+    }
+
+    // Rasio bunga = (Jumlah bunga betina / Total bunga) * 100
+    const betina = parseFloat(elBetina.value);
+    const totalBunga = parseFloat(elTotalBunga.value);
+    let rasio = null;
+    if (!isNaN(totalBunga) && totalBunga > 0 && !isNaN(betina)) {
+      rasio = (betina / totalBunga) * 100;
+    }
+
+    // Tonase = (Jumlah tandan * Berat per tandan) / 1000
+    const jTandan = parseFloat(elJumlahTandan.value);
+    const beratPer = parseFloat(elBeratPerTandan.value);
+    let tonase = null;
+    if (!isNaN(jTandan) && !isNaN(beratPer)) {
+      tonase = (jTandan * beratPer) / 1000;
+    }
+
+    // Update UI
+    outRendemen.textContent = rendemen === null ? '—' : fmtNum(rendemen,2) + ' %';
+    outRasio.textContent = rasio === null ? '—' : fmtNum(rasio,2) + ' %';
+    outTonase.textContent = tonase === null ? '—' : fmtNum(tonase,3) + ' ton';
+  }
+
+  // Calculate on button and also live when inputs change (debounced)
+  let debounceTimer;
+  function debouncedCompute(){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(computeAll, 220);
+  }
+
+  [elTbs, elBeratMinyak, elBetina, elTotalBunga, elJumlahTandan, elBeratPerTandan].forEach(inp=>{
+    inp.addEventListener('input', debouncedCompute);
+    inp.addEventListener('change', computeAll);
+  });
+
+  btnCalc.addEventListener('click', (e)=>{
+    e.preventDefault();
+    computeAll();
+  });
+
+  btnReset.addEventListener('click', (e)=>{
+    e.preventDefault();
+    [elTbs, elBeratMinyak, elBetina, elTotalBunga, elJumlahTandan, elBeratPerTandan].forEach(i=>i.value='');
+    computeAll();
+  });
+
+  // Initialize default: show menu; ensure focus
+  menuCards[0].focus();
+})();
+</script>
+</body>
+</html>
